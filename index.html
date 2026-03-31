@@ -1,864 +1,592 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemie Grundlagen – Atombau</title>
-    <style>
-        :root {
-            --primary: #2c5282;
-            --secondary: #4a90a4;
-            --accent: #48bb78;
-            --warning: #ed8936;
-            --light-bg: #f7fafc;
-            --border: #e2e8f0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemie-Tutor · Zwischenmolekulare Kräfte</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #171b26;
+    --surface2: #1e2335;
+    --border: #2a3050;
+    --accent: #5b9cf6;
+    --accent2: #7fcfa2;
+    --accent3: #f0a96e;
+    --text: #e8ecf4;
+    --text-muted: #7a88a8;
+    --user-bubble: #1e3a5c;
+    --bot-bubble: #1a2238;
+    --dot1: #5b9cf6;
+    --dot2: #7fcfa2;
+    --dot3: #c084fc;
+  }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+- { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            line-height: 1.7;
-            color: #2d3748;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: #fff;
-        }
+body {
+font-family: ‘Nunito’, sans-serif;
+background: var(–bg);
+color: var(–text);
+height: 100vh;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+}
 
-        /* Header */
-        header {
-            text-align: center;
-            padding: 2rem 0;
-            border-bottom: 3px solid var(--primary);
-            margin-bottom: 3rem;
-        }
+/* Animated background */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background:
+radial-gradient(ellipse 60% 50% at 20% 10%, rgba(91,156,246,0.07) 0%, transparent 60%),
+radial-gradient(ellipse 40% 40% at 80% 80%, rgba(127,207,162,0.06) 0%, transparent 55%),
+radial-gradient(ellipse 50% 30% at 60% 20%, rgba(192,132,252,0.05) 0%, transparent 50%);
+pointer-events: none;
+z-index: 0;
+}
 
-        header h1 {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
+/* Header */
+header {
+position: relative;
+z-index: 10;
+padding: 14px 24px;
+background: rgba(15,17,23,0.85);
+backdrop-filter: blur(12px);
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: center;
+gap: 14px;
+flex-shrink: 0;
+}
 
-        header .subtitle {
-            color: #718096;
-            font-size: 1.1rem;
-        }
+.logo-orb {
+width: 40px;
+height: 40px;
+border-radius: 12px;
+background: linear-gradient(135deg, #5b9cf6, #7fcfa2);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 18px;
+flex-shrink: 0;
+box-shadow: 0 0 20px rgba(91,156,246,0.3);
+}
 
-        /* Inhaltsverzeichnis */
-        .toc {
-            background: var(--light-bg);
-            border-radius: 8px;
-            padding: 1.5rem 2rem;
-            margin-bottom: 3rem;
-        }
+.header-text h1 {
+font-family: ‘Instrument Serif’, serif;
+font-size: 1.15rem;
+color: var(–text);
+letter-spacing: 0.01em;
+}
 
-        .toc h2 {
-            color: var(--primary);
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
+.header-text p {
+font-size: 0.72rem;
+color: var(–text-muted);
+font-family: ‘DM Mono’, monospace;
+letter-spacing: 0.05em;
+}
 
-        .toc ul {
-            list-style: none;
-        }
+.header-badge {
+margin-left: auto;
+font-size: 0.68rem;
+font-family: ‘DM Mono’, monospace;
+color: var(–accent2);
+background: rgba(127,207,162,0.1);
+border: 1px solid rgba(127,207,162,0.25);
+padding: 4px 10px;
+border-radius: 20px;
+letter-spacing: 0.04em;
+}
 
-        .toc li {
-            padding: 0.4rem 0;
-        }
+/* Chat area */
+#chat {
+flex: 1;
+overflow-y: auto;
+padding: 24px 16px 8px;
+display: flex;
+flex-direction: column;
+gap: 16px;
+position: relative;
+z-index: 1;
+scroll-behavior: smooth;
+}
 
-        .toc a {
-            color: var(--secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+#chat::-webkit-scrollbar { width: 4px; }
+#chat::-webkit-scrollbar-track { background: transparent; }
+#chat::-webkit-scrollbar-thumb { background: var(–border); border-radius: 4px; }
 
-        .toc a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
+.message-row {
+display: flex;
+gap: 10px;
+align-items: flex-end;
+animation: fadeSlideIn 0.35s ease forwards;
+opacity: 0;
+}
 
-        /* Kapitel */
-        .chapter {
-            margin-bottom: 4rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-        }
+@keyframes fadeSlideIn {
+from { opacity: 0; transform: translateY(10px); }
+to   { opacity: 1; transform: translateY(0); }
+}
 
-        .chapter h2 {
-            color: var(--primary);
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--secondary);
-        }
+.message-row.user { flex-direction: row-reverse; }
 
-        .chapter h3 {
-            color: var(--secondary);
-            font-size: 1.3rem;
-            margin: 2rem 0 1rem;
-        }
+.avatar {
+width: 30px;
+height: 30px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+flex-shrink: 0;
+margin-bottom: 2px;
+}
 
-        /* Textplatzhalter */
-        .content-placeholder {
-            background: #fafafa;
-            border: 2px dashed #cbd5e0;
-            border-radius: 6px;
-            padding: 2rem;
-            margin: 1.5rem 0;
-            color: #a0aec0;
-            font-style: italic;
-            min-height: 150px;
-        }
+.avatar.bot {
+background: linear-gradient(135deg, #5b9cf6, #7fcfa2);
+box-shadow: 0 0 12px rgba(91,156,246,0.25);
+}
 
-        .content-placeholder::before {
-            content: "📝 ";
-        }
+.avatar.user {
+background: linear-gradient(135deg, #f0a96e, #e87a9e);
+}
 
-        /* Merksatz */
-        .merksatz {
-            background: linear-gradient(135deg, #ebf8ff 0%, #e6fffa 100%);
-            border-left: 5px solid var(--secondary);
-            border-radius: 0 8px 8px 0;
-            padding: 1.2rem 1.5rem;
-            margin: 2rem 0;
-            position: relative;
-        }
+.bubble {
+max-width: min(72%, 560px);
+padding: 12px 16px;
+border-radius: 16px;
+font-size: 0.92rem;
+line-height: 1.65;
+position: relative;
+}
 
-        .merksatz::before {
-            content: "💡 Merke";
-            display: block;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.bubble.bot {
+background: var(–bot-bubble);
+border: 1px solid var(–border);
+border-bottom-left-radius: 4px;
+color: var(–text);
+}
 
-        .merksatz p {
-            margin: 0;
-            font-weight: 500;
-        }
+.bubble.user {
+background: var(–user-bubble);
+border: 1px solid rgba(91,156,246,0.2);
+border-bottom-right-radius: 4px;
+color: var(–text);
+}
 
-        .merksatz-placeholder {
-            color: #a0aec0;
-            font-style: italic;
-        }
+.bubble strong { color: var(–accent); font-weight: 600; }
+.bubble em { color: var(–accent2); font-style: italic; }
 
-        /* Aufgabenbox */
-        .aufgabe {
-            background: #fffaf0;
-            border: 2px solid var(--warning);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
+/* Typing indicator */
+.typing-row {
+display: flex;
+gap: 10px;
+align-items: flex-end;
+animation: fadeSlideIn 0.3s ease forwards;
+opacity: 0;
+}
 
-        .aufgabe::before {
-            content: "✏️ Aufgabe";
-            display: block;
-            font-weight: 700;
-            color: #c05621;
-            margin-bottom: 0.8rem;
-            font-size: 1rem;
-        }
+.typing-bubble {
+background: var(–bot-bubble);
+border: 1px solid var(–border);
+border-bottom-left-radius: 4px;
+padding: 14px 18px;
+border-radius: 16px;
+display: flex;
+gap: 5px;
+align-items: center;
+}
 
-        .aufgabe-nummer {
-            display: inline-block;
-            background: var(--warning);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 28px;
-            font-weight: 700;
-            margin-right: 0.5rem;
-            font-size: 0.9rem;
-        }
+.typing-dot {
+width: 7px;
+height: 7px;
+border-radius: 50%;
+animation: bounce 1.3s infinite;
+}
 
-        .aufgabe-text {
-            margin: 0.5rem 0;
-        }
+.typing-dot:nth-child(1) { background: var(–dot1); animation-delay: 0s; }
+.typing-dot:nth-child(2) { background: var(–dot2); animation-delay: 0.18s; }
+.typing-dot:nth-child(3) { background: var(–dot3); animation-delay: 0.36s; }
 
-        .aufgabe-loesung {
-            background: #feebc8;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-top: 1rem;
-            display: none;
-        }
+@keyframes bounce {
+0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+30% { transform: translateY(-5px); opacity: 1; }
+}
 
-        .aufgabe-loesung.show {
-            display: block;
-        }
+/* Input area */
+.input-area {
+position: relative;
+z-index: 10;
+padding: 14px 16px 16px;
+background: rgba(15,17,23,0.9);
+backdrop-filter: blur(12px);
+border-top: 1px solid var(–border);
+flex-shrink: 0;
+}
 
-        .btn-loesung {
-            background: var(--warning);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            transition: background 0.2s;
-        }
+.input-wrapper {
+display: flex;
+gap: 10px;
+align-items: flex-end;
+max-width: 720px;
+margin: 0 auto;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 8px 8px 8px 16px;
+transition: border-color 0.2s;
+}
 
-        .btn-loesung:hover {
-            background: #dd6b20;
-        }
+.input-wrapper:focus-within {
+border-color: rgba(91,156,246,0.5);
+box-shadow: 0 0 0 3px rgba(91,156,246,0.08);
+}
 
-        /* Multiple Choice */
-        .quiz {
-            background: #f0fff4;
-            border: 2px solid var(--accent);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
+#userInput {
+flex: 1;
+background: none;
+border: none;
+outline: none;
+color: var(–text);
+font-family: ‘Nunito’, sans-serif;
+font-size: 0.92rem;
+line-height: 1.5;
+resize: none;
+max-height: 120px;
+min-height: 24px;
+padding: 4px 0;
+}
 
-        .quiz::before {
-            content: "🎯 Schnelltest";
-            display: block;
-            font-weight: 700;
-            color: #276749;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
+#userInput::placeholder { color: var(–text-muted); }
 
-        .quiz-frage {
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+#sendBtn {
+width: 38px;
+height: 38px;
+border-radius: 10px;
+background: linear-gradient(135deg, #5b9cf6, #7fcfa2);
+border: none;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+transition: transform 0.15s, opacity 0.15s;
+box-shadow: 0 2px 12px rgba(91,156,246,0.3);
+}
 
-        .quiz-optionen {
-            list-style: none;
-        }
+#sendBtn:hover { transform: scale(1.06); }
+#sendBtn:active { transform: scale(0.96); }
+#sendBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        .quiz-optionen li {
-            margin: 0.5rem 0;
-        }
+#sendBtn svg { width: 16px; height: 16px; fill: #fff; }
 
-        .quiz-optionen label {
-            display: flex;
-            align-items: center;
-            padding: 0.6rem 1rem;
-            background: white;
-            border: 1px solid #c6f6d5;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+.input-hint {
+text-align: center;
+font-size: 0.68rem;
+color: var(–text-muted);
+margin-top: 8px;
+font-family: ‘DM Mono’, monospace;
+letter-spacing: 0.03em;
+}
 
-        .quiz-optionen label:hover {
-            background: #c6f6d5;
-        }
+/* Molecule decoration */
+.molecule-bg {
+position: fixed;
+bottom: 100px;
+right: -30px;
+opacity: 0.04;
+font-size: 160px;
+pointer-events: none;
+z-index: 0;
+transform: rotate(-15deg);
+}
 
-        .quiz-optionen input[type="radio"] {
-            margin-right: 0.8rem;
-            accent-color: var(--accent);
-        }
+/* Formatting helpers */
+.bubble p + p { margin-top: 8px; }
+.bubble ul { padding-left: 18px; margin-top: 6px; }
+.bubble ul li { margin-bottom: 4px; }
+</style>
 
-        .quiz-feedback {
-            margin-top: 1rem;
-            padding: 0.8rem;
-            border-radius: 4px;
-            display: none;
-            font-weight: 500;
-        }
-
-        .quiz-feedback.correct {
-            background: #c6f6d5;
-            color: #276749;
-            display: block;
-        }
-
-        .quiz-feedback.incorrect {
-            background: #fed7d7;
-            color: #c53030;
-            display: block;
-        }
-
-        .btn-check {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            margin-top: 0.8rem;
-            transition: background 0.2s;
-        }
-
-        .btn-check:hover {
-            background: #38a169;
-        }
-
-        /* Link-Box */
-        .links {
-            background: #faf5ff;
-            border: 2px solid #9f7aea;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .links::before {
-            content: "🔗 Weiterführende Links";
-            display: block;
-            font-weight: 700;
-            color: #6b46c1;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
-
-        .links ul {
-            list-style: none;
-        }
-
-        .links li {
-            padding: 0.4rem 0;
-        }
-
-        .links a {
-            color: #805ad5;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .links a:hover {
-            text-decoration: underline;
-        }
-
-        .links a::before {
-            content: "→";
-        }
-
-        /* Definition */
-        .definition {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1.2rem 1.5rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .definition-term {
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        .definition-text {
-            margin-top: 0.5rem;
-            color: #4a5568;
-        }
-
-        /* Bild-Platzhalter */
-        .bild-placeholder {
-            background: #edf2f7;
-            border: 2px dashed #a0aec0;
-            border-radius: 8px;
-            padding: 3rem 2rem;
-            margin: 1.5rem 0;
-            text-align: center;
-            color: #718096;
-        }
-
-        .bild-placeholder::before {
-            content: "🖼️";
-            display: block;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Tabelle */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1.5rem 0;
-        }
-
-        th, td {
-            border: 1px solid var(--border);
-            padding: 0.8rem;
-            text-align: left;
-        }
-
-        th {
-            background: var(--primary);
-            color: white;
-        }
-
-        tr:nth-child(even) {
-            background: var(--light-bg);
-        }
-
-        /* Formelbox */
-        .formel {
-            background: #1a202c;
-            color: #f7fafc;
-            padding: 1.2rem 1.5rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-
-        /* Footer */
-        footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--border);
-            text-align: center;
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        /* Print-Optimierung */
-        @media print {
-            body {
-                padding: 0;
-            }
-            
-            .btn-loesung, .btn-check {
-                display: none;
-            }
-            
-            .aufgabe-loesung {
-                display: block !important;
-            }
-            
-            .quiz-feedback {
-                display: none !important;
-            }
-        }
-    </style>
 </head>
 <body>
 
-    <header>
-        <h1>Atombau</h1>
-        <p class="subtitle">Grundlagenfach Chemie</p>
-    </header>
+<div class="molecule-bg">⚗️</div>
 
-    <!-- Inhaltsverzeichnis -->
-    <nav class="toc">
-        <h2>Inhaltsverzeichnis</h2>
-        <ul>
-            <li><a href="#kap1">1. Einführung in den Atombau</a></li>
-            <li><a href="#kap2">2. Elementarteilchen</a></li>
-            <li><a href="#kap3">3. Das Bohrsche Atommodell</a></li>
-            <li><a href="#kap4">4. Elektronenkonfiguration</a></li>
-            <li><a href="#kap5">5. Das Periodensystem</a></li>
-        </ul>
-    </nav>
+<header>
+  <div class="logo-orb">🧪</div>
+  <div class="header-text">
+    <h1>Chemie-Tutor</h1>
+    <p>Zwischenmolekulare Kräfte · 10. Klasse</p>
+  </div>
+  <div class="header-badge">KI-Tutor aktiv</div>
+</header>
 
-    <!-- Kapitel 1 -->
-    <section class="chapter" id="kap1">
-        <h2>1. Einführung in den Atombau</h2>
-        
-        <div class="content-placeholder">
-            Hier Text zur Geschichte des Atombegriffs einfügen (Demokrit, Dalton, etc.)
-        </div>
+<div id="chat"></div>
 
-        <div class="definition">
-            <p class="definition-term">Atom</p>
-            <p class="definition-text">[Definition hier einfügen]</p>
-        </div>
+<div class="input-area">
+  <div class="input-wrapper">
+    <textarea id="userInput" rows="1" placeholder="Deine Antwort eingeben …"></textarea>
+    <button id="sendBtn" title="Senden">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+  <div class="input-hint">Enter zum Senden · Shift+Enter für neue Zeile</div>
+</div>
 
-        <div class="content-placeholder">
-            Weiterer einführender Text zum Aufbau der Materie...
-        </div>
+<script>
+const SYSTEM_PROMPT = `Du bist eine freundliche und geduldige Lehrperson in der Rolle eines Tutors. Du unterstützt Schülerinnen und Schüler der 10. Schulstufe (Gymnasium) beim Lernen über zwischenmolekulare Kräfte (Wasserstoffbrücken, Van-der-Waals-Wechselwirkungen und Dipol-Dipol-Wechselwirkungen), angewandt auf organische Substanzen. Das Thema umfasst auch den Einfluss auf Siedetemperaturen, Viskosität, Dichte, Mischbarkeit etc.
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Zusammenfassender Merksatz hier einfügen]</p>
-        </div>
+Dein Ziel ist es, durch Fragen, Rückmeldungen und Reflexion das Verständnis zu fördern. Du bleibst konsequent in dieser Tutorrolle.
 
-        <div class="bild-placeholder">
-            Abbildung: Historische Entwicklung der Atommodelle
-        </div>
+Pädagogische Grundsätze:
+- Du erklärst nur so viel wie nötig.
+- Du förderst eigenständiges Denken.
+- Du gibst keine vollständigen Musterlösungen.
+- Du übernimmst keine Aufgaben der Lernenden.
 
-        <!-- Aufgabe -->
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">1</span>
-                [Aufgabenstellung hier einfügen]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösung hier einfügen]
-            </div>
-        </div>
+Sprache und Stil:
+- Antworte IMMER auf Deutsch.
+- Verwende eine klare, einfache und sachliche Sprache.
+- Schreibe altersgerecht für Schülerinnen und Schüler der 10. Klasse.
+- Strukturiere Antworten übersichtlich.
 
-        <!-- Multiple Choice -->
-        <div class="quiz" data-correct="b">
-            <p class="quiz-frage">[Multiple-Choice-Frage hier einfügen]</p>
-            <ul class="quiz-optionen">
-                <li>
-                    <label>
-                        <input type="radio" name="quiz1" value="a">
-                        [Option A]
-                    </label>
-                </li>
-                <li>
-                    <label>
-                        <input type="radio" name="quiz1" value="b">
-                        [Option B - korrekte Antwort]
-                    </label>
-                </li>
-                <li>
-                    <label>
-                        <input type="radio" name="quiz1" value="c">
-                        [Option C]
-                    </label>
-                </li>
-                <li>
-                    <label>
-                        <input type="radio" name="quiz1" value="d">
-                        [Option D]
-                    </label>
-                </li>
-            </ul>
-            <button class="btn-check" onclick="checkQuiz(this)">Überprüfen</button>
-            <div class="quiz-feedback"></div>
-        </div>
+Gesprächsbeginn:
+Bitte die Lernenden zuerst um:
+1. den Titel ihres Themas
+2. eine kurze Beschreibung, was sie darüber erklären oder zusammenfassen möchten.
+Gib keine Beispiele oder Inhalte vor. Warte auf die Antwort, bevor du fortfährst.
 
-        <div class="links">
-            <ul>
-                <li><a href="#">[Link-Beschreibung 1]</a></li>
-                <li><a href="#">[Link-Beschreibung 2]</a></li>
-                <li><a href="#">[Video: Link-Beschreibung 3]</a></li>
-            </ul>
-        </div>
-    </section>
+Arbeitsweise im Gespräch:
+Arbeite schrittweise:
+1. Stelle jeweils nur EINE Frage gleichzeitig.
+2. Warte auf die Antwort der Lernenden.
+3. Stelle anschließend eine neue Frage oder gib eine kurze Rückmeldung.
 
-    <!-- Kapitel 2 -->
-    <section class="chapter" id="kap2">
-        <h2>2. Elementarteilchen</h2>
-        
-        <h3>2.1 Protonen, Neutronen und Elektronen</h3>
-        
-        <div class="content-placeholder">
-            Text zu den drei Elementarteilchen einfügen...
-        </div>
+Deine Fragen sollen:
+- das Verständnis prüfen
+- zum Nachdenken anregen
+- Unklarheiten sichtbar machen
+- zum präziseren Formulieren führen
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Teilchen</th>
-                    <th>Ladung</th>
-                    <th>Masse (u)</th>
-                    <th>Ort im Atom</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Proton</td>
-                    <td>[+1]</td>
-                    <td>[≈1]</td>
-                    <td>[Atomkern]</td>
-                </tr>
-                <tr>
-                    <td>Neutron</td>
-                    <td>[0]</td>
-                    <td>[≈1]</td>
-                    <td>[Atomkern]</td>
-                </tr>
-                <tr>
-                    <td>Elektron</td>
-                    <td>[-1]</td>
-                    <td>[≈0]</td>
-                    <td>[Hülle]</td>
-                </tr>
-            </tbody>
-        </table>
+Wenn Aussagen unklar oder falsch sind:
+- weise freundlich darauf hin
+- stelle eine klärende Frage
+- korrigiere nicht sofort vollständig
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz zu Elementarteilchen hier einfügen]</p>
-        </div>
+Umgang mit Antworten:
+Analysiere jede Antwort der Lernenden und achte auf:
+- fachliche Richtigkeit
+- Verständlichkeit
+- Vollständigkeit
+- Struktur
+Wenn etwas fehlt oder unklar ist, stelle gezielte Rückfragen.
 
-        <h3>2.2 Ordnungszahl und Massenzahl</h3>
+Textphase:
+Wenn genügend Verständnis vorhanden ist, bitte die Lernenden, ihr Thema ausführlich und strukturiert zu erklären oder einen Textentwurf zu schreiben. Du überarbeitest den Text nicht selbst.
 
-        <div class="content-placeholder">
-            Text zu Ordnungszahl, Massenzahl und Isotopen...
-        </div>
+Feedbackphase:
+Wenn die Lernenden keine weiteren Fragen beantworten möchten, gib ein zusammenfassendes Feedback.
+Das Feedback enthält:
+1. Stärken des Textes
+2. mögliche inhaltliche Lücken
+3. Einschätzung der Verständlichkeit
+4. Einschätzung der Struktur
 
-        <div class="formel">
-            [Formel/Notation hier einfügen, z.B.: A = Z + N]
-        </div>
+Wichtig:
+- Du ergänzt keine neuen Inhalte.
+- Du formulierst keine konkrete Musterlösung.
+- Du gibst keine direkten Verbesserungsvorschläge.
+Beende dein Feedback mit der offenen Frage: „Wie möchtest du mit dieser Rückmeldung weiterarbeiten?"`;
 
-        <div class="definition">
-            <p class="definition-term">Isotope</p>
-            <p class="definition-text">[Definition hier einfügen]</p>
-        </div>
+const chatEl = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz zu Ordnungszahl/Massenzahl hier einfügen]</p>
-        </div>
+const history = [];
+let isLoading = false;
 
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">2</span>
-                [Aufgabe zu Elementarteilchen/Isotopen hier einfügen]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösung hier einfügen]
-            </div>
-        </div>
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
-        <div class="quiz" data-correct="c">
-            <p class="quiz-frage">[Frage zu Ordnungszahl/Massenzahl]</p>
-            <ul class="quiz-optionen">
-                <li><label><input type="radio" name="quiz2" value="a">[Option A]</label></li>
-                <li><label><input type="radio" name="quiz2" value="b">[Option B]</label></li>
-                <li><label><input type="radio" name="quiz2" value="c">[Option C - korrekt]</label></li>
-                <li><label><input type="radio" name="quiz2" value="d">[Option D]</label></li>
-            </ul>
-            <button class="btn-check" onclick="checkQuiz(this)">Überprüfen</button>
-            <div class="quiz-feedback"></div>
-        </div>
+function formatMessage(text) {
+  let html = escapeHtml(text);
+  // Bold: **text**
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic: *text*
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Numbered lists
+  html = html.replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+  // Line breaks to paragraphs
+  const paragraphs = html.split(/\n{2,}/);
+  if (paragraphs.length > 1) {
+    html = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  } else {
+    html = html.replace(/\n/g, '<br>');
+  }
+  return html;
+}
 
-        <div class="links">
-            <ul>
-                <li><a href="#">[Simulation: Atombau]</a></li>
-                <li><a href="#">[Übungsblatt Isotope]</a></li>
-            </ul>
-        </div>
-    </section>
+function addMessage(role, text) {
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
 
-    <!-- Kapitel 3 -->
-    <section class="chapter" id="kap3">
-        <h2>3. Das Bohrsche Atommodell</h2>
-        
-        <div class="content-placeholder">
-            Einführung zum Bohrschen Modell und seinen Postulaten...
-        </div>
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${role}`;
+  avatar.textContent = role === 'bot' ? '🧪' : '👤';
 
-        <div class="bild-placeholder">
-            Abbildung: Bohrsches Atommodell mit Schalen
-        </div>
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.innerHTML = formatMessage(text);
 
-        <div class="content-placeholder">
-            Erklärung der Elektronenschalen K, L, M, N...
-        </div>
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz zur Schalenbesetzung, z.B. 2n²-Regel]</p>
-        </div>
+function showTyping() {
+  const row = document.createElement('div');
+  row.className = 'typing-row';
+  row.id = 'typing';
 
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">3</span>
-                [Aufgabe zum Zeichnen von Bohrschen Atommodellen]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösung mit Skizzen hier einfügen]
-            </div>
-        </div>
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar bot';
+  avatar.textContent = '🧪';
 
-        <div class="quiz" data-correct="a">
-            <p class="quiz-frage">[Frage zum Bohrschen Modell]</p>
-            <ul class="quiz-optionen">
-                <li><label><input type="radio" name="quiz3" value="a">[Option A - korrekt]</label></li>
-                <li><label><input type="radio" name="quiz3" value="b">[Option B]</label></li>
-                <li><label><input type="radio" name="quiz3" value="c">[Option C]</label></li>
-            </ul>
-            <button class="btn-check" onclick="checkQuiz(this)">Überprüfen</button>
-            <div class="quiz-feedback"></div>
-        </div>
+  const bubble = document.createElement('div');
+  bubble.className = 'typing-bubble';
+  bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
 
-        <div class="links">
-            <ul>
-                <li><a href="#">[Interaktive Animation: Bohr-Modell]</a></li>
-                <li><a href="#">[Video: Vom Rutherford zum Bohr-Modell]</a></li>
-            </ul>
-        </div>
-    </section>
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
 
-    <!-- Kapitel 4 -->
-    <section class="chapter" id="kap4">
-        <h2>4. Elektronenkonfiguration</h2>
-        
-        <div class="content-placeholder">
-            Einführung zur Elektronenkonfiguration und Schreibweise...
-        </div>
+function removeTyping() {
+  const el = document.getElementById('typing');
+  if (el) el.remove();
+}
 
-        <div class="formel">
-            [Beispiel: 1s² 2s² 2p⁶ 3s² 3p⁶]
-        </div>
+async function sendMessage(userText) {
+  if (!userText.trim() || isLoading) return;
 
-        <div class="content-placeholder">
-            Text zu Orbitalen (s, p, d, f) und deren Besetzung...
-        </div>
+  isLoading = true;
+  sendBtn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
 
-        <div class="bild-placeholder">
-            Abbildung: Form der s-, p-, d-Orbitale
-        </div>
+  addMessage('user', userText);
+  history.push({ role: 'user', content: userText });
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz zu Aufbauprinzip, Pauli-Prinzip, Hund'sche Regel]</p>
-        </div>
+  showTyping();
 
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">4</span>
-                [Aufgabe: Elektronenkonfiguration verschiedener Elemente aufschreiben]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösungen hier einfügen]
-            </div>
-        </div>
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: history
+      })
+    });
 
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">5</span>
-                [Weitere Aufgabe zur Elektronenkonfiguration]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösung hier einfügen]
-            </div>
-        </div>
+    const data = await res.json();
+    removeTyping();
 
-        <div class="quiz" data-correct="b">
-            <p class="quiz-frage">[Frage zur Elektronenkonfiguration]</p>
-            <ul class="quiz-optionen">
-                <li><label><input type="radio" name="quiz4" value="a">[Option A]</label></li>
-                <li><label><input type="radio" name="quiz4" value="b">[Option B - korrekt]</label></li>
-                <li><label><input type="radio" name="quiz4" value="c">[Option C]</label></li>
-                <li><label><input type="radio" name="quiz4" value="d">[Option D]</label></li>
-            </ul>
-            <button class="btn-check" onclick="checkQuiz(this)">Überprüfen</button>
-            <div class="quiz-feedback"></div>
-        </div>
+    const reply = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n');
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Zusammenfassender Merksatz zum Kapitel]</p>
-        </div>
+    if (reply) {
+      history.push({ role: 'assistant', content: reply });
+      addMessage('bot', reply);
+    } else {
+      addMessage('bot', 'Entschuldigung, da ist etwas schiefgelaufen. Bitte versuche es noch einmal.');
+    }
+  } catch (err) {
+    removeTyping();
+    addMessage('bot', 'Es gab einen Verbindungsfehler. Bitte überprüfe deine Internetverbindung und versuche es erneut.');
+    console.error(err);
+  }
 
-        <div class="links">
-            <ul>
-                <li><a href="#">[Orbital-Visualisierung]</a></li>
-                <li><a href="#">[Übungsaufgaben Elektronenkonfiguration]</a></li>
-            </ul>
-        </div>
-    </section>
+  isLoading = false;
+  sendBtn.disabled = false;
+  input.focus();
+}
 
-    <!-- Kapitel 5 -->
-    <section class="chapter" id="kap5">
-        <h2>5. Das Periodensystem</h2>
-        
-        <div class="content-placeholder">
-            Aufbau des Periodensystems, Perioden und Gruppen...
-        </div>
+// Auto-resize textarea
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+});
 
-        <div class="bild-placeholder">
-            Abbildung: Periodensystem der Elemente
-        </div>
+// Send on Enter (not Shift+Enter)
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage(input.value);
+  }
+});
 
-        <div class="content-placeholder">
-            Zusammenhang zwischen Elektronenkonfiguration und Stellung im PSE...
-        </div>
+sendBtn.addEventListener('click', () => sendMessage(input.value));
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz: Zusammenhang Elektronen - PSE]</p>
-        </div>
+// Initial greeting
+async function startChat() {
+  isLoading = true;
+  sendBtn.disabled = true;
+  showTyping();
 
-        <div class="content-placeholder">
-            Trends im Periodensystem (Atomradius, Elektronegativität, etc.)...
-        </div>
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: 'Starte das Gespräch mit einer freundlichen Begrüßung und bitte mich dann um die beiden Angaben für den Einstieg.' }]
+      })
+    });
 
-        <div class="merksatz">
-            <p class="merksatz-placeholder">[Merksatz zu periodischen Trends]</p>
-        </div>
+    const data = await res.json();
+    removeTyping();
 
-        <div class="aufgabe">
-            <p class="aufgabe-text">
-                <span class="aufgabe-nummer">6</span>
-                [Aufgabe zum Periodensystem]
-            </p>
-            <button class="btn-loesung" onclick="toggleLoesung(this)">Lösung anzeigen</button>
-            <div class="aufgabe-loesung">
-                [Lösung hier einfügen]
-            </div>
-        </div>
+    const reply = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n');
 
-        <div class="quiz" data-correct="d">
-            <p class="quiz-frage">[Frage zum Periodensystem]</p>
-            <ul class="quiz-optionen">
-                <li><label><input type="radio" name="quiz5" value="a">[Option A]</label></li>
-                <li><label><input type="radio" name="quiz5" value="b">[Option B]</label></li>
-                <li><label><input type="radio" name="quiz5" value="c">[Option C]</label></li>
-                <li><label><input type="radio" name="quiz5" value="d">[Option D - korrekt]</label></li>
-            </ul>
-            <button class="btn-check" onclick="checkQuiz(this)">Überprüfen</button>
-            <div class="quiz-feedback"></div>
-        </div>
+    if (reply) {
+      history.push({ role: 'assistant', content: reply });
+      addMessage('bot', reply);
+    }
+  } catch (err) {
+    removeTyping();
+    addMessage('bot', 'Hallo! Ich bin dein Chemie-Tutor. Leider konnte ich keine Verbindung herstellen. Bitte lade die Seite neu.');
+  }
 
-        <div class="links">
-            <ul>
-                <li><a href="#">[Interaktives Periodensystem]</a></li>
-                <li><a href="#">[Video: Trends im Periodensystem]</a></li>
-                <li><a href="#">[Periodensystem zum Ausdrucken]</a></li>
-            </ul>
-        </div>
-    </section>
+  isLoading = false;
+  sendBtn.disabled = false;
+  input.focus();
+}
 
-    <footer>
-        <p>Chemie Grundlagenfach – Atombau</p>
-        <p>Version [Datum einfügen]</p>
-    </footer>
-
-    <script>
-        // Lösung ein-/ausblenden
-        function toggleLoesung(button) {
-            const loesung = button.nextElementSibling;
-            if (loesung.classList.contains('show')) {
-                loesung.classList.remove('show');
-                button.textContent = 'Lösung anzeigen';
-            } else {
-                loesung.classList.add('show');
-                button.textContent = 'Lösung verbergen';
-            }
-        }
-
-        // Multiple Choice überprüfen
-        function checkQuiz(button) {
-            const quiz = button.closest('.quiz');
-            const correctAnswer = quiz.dataset.correct;
-            const selected = quiz.querySelector('input[type="radio"]:checked');
-            const feedback = quiz.querySelector('.quiz-feedback');
-
-            if (!selected) {
-                feedback.textContent = 'Bitte wähle eine Antwort aus.';
-                feedback.className = 'quiz-feedback incorrect';
-                return;
-            }
-
-            if (selected.value === correctAnswer) {
-                feedback.textContent = '✓ Richtig!';
-                feedback.className = 'quiz-feedback correct';
-            } else {
-                feedback.textContent = '✗ Leider falsch. Versuche es nochmal!';
-                feedback.className = 'quiz-feedback incorrect';
-            }
-        }
-    </script>
+startChat();
+</script>
 
 </body>
 </html>
